@@ -1,10 +1,7 @@
-package br.com.petfy.ms_clinica.dto;
+package br.com.petfy.ms_clinica.dto.clinica;
 
-import br.com.petfy.ms_clinica.model.Endereco;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ClinicaResponseDto(@JsonProperty("razao_social") String razaoSocial,

@@ -1,7 +1,7 @@
-package br.com.petfy.ms_clinica.dto;
+package br.com.petfy.ms_clinica.dto.clinica;
 
+import br.com.petfy.ms_clinica.dto.coordinates.EnderecoResponseDto;
 import br.com.petfy.ms_clinica.model.Clinica;
-import org.springframework.lang.Contract;
 
 
 public record ClinicaVerificadaDTO(

@@ -1,4 +1,4 @@
-package br.com.petfy.ms_clinica.dto;
+package br.com.petfy.ms_clinica.dto.coordinates;
 
 import br.com.petfy.ms_clinica.model.Endereco;
 

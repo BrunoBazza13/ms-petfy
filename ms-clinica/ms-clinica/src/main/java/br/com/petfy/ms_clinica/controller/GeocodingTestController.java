@@ -1,7 +1,7 @@
 package br.com.petfy.ms_clinica.controller;
 
 
-import br.com.petfy.ms_clinica.dto.Coordinates;
+import br.com.petfy.ms_clinica.dto.coordinates.Coordinates;
 import br.com.petfy.ms_clinica.service.GeocodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,12 +1,17 @@
 package br.com.petfy.ms_clinica.service;
-
-import br.com.petfy.ms_clinica.dto.*;
+import br.com.petfy.ms_clinica.dto.clinica.ClinicaProximaDTO;
+import br.com.petfy.ms_clinica.dto.clinica.ClinicaResponseDto;
+import br.com.petfy.ms_clinica.dto.clinica.ClinicaResquestDTO;
+import br.com.petfy.ms_clinica.dto.clinica.ClinicaVerificadaDTO;
+import br.com.petfy.ms_clinica.dto.coordinates.Coordinates;
+import br.com.petfy.ms_clinica.dto.distance.Distance;
+import br.com.petfy.ms_clinica.dto.distance.DistanceMatrixResponse;
+import br.com.petfy.ms_clinica.dto.distance.Element;
 import br.com.petfy.ms_clinica.model.Clinica;
 import br.com.petfy.ms_clinica.model.Endereco;
 import br.com.petfy.ms_clinica.repository.ClinicaRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -39,9 +44,11 @@ public class ClinicaService {
     @Autowired
     private GeocodingService geocodingService;
 
-
     @Autowired
     private ClinicaRepository clinicaRepository;
+
+    @Autowired
+    private DistanceMatrix distanceMatrix;
 
     public String consultarCnpj(String cnpj) throws IOException {
 
@@ -61,7 +68,6 @@ public class ClinicaService {
 
         if(responseJson.getInt("code") == 200){
             JSONArray dataArray = responseJson.getJSONArray("data");
-
             return dataArray.toString(2);
 
         } else if (responseJson.getInt("code") >= 600 && responseJson.getInt("code") <= 799) {
@@ -77,16 +83,12 @@ public class ClinicaService {
         }else {
             return "Ocorreu um erro inesperado com a API. Código: " + responseJson.getInt("code");
          }
-
     }
 
 
     public ClinicaVerificadaDTO cadastrarClinica(ClinicaResquestDTO resquestDTO) throws IOException {
 
-        // 1️⃣ Consulta a API de CNPJ
         String resultadoJsonString = consultarCnpj(resquestDTO.cnpj());
-
-       // System.out.println(resultadoJsonString);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -95,15 +97,12 @@ public class ClinicaService {
                 new TypeReference<List<ClinicaResponseDto>>() {}
         );
 
-        // 2️⃣ Pega os dados do primeiro resultado
         ClinicaResponseDto dadosCrus = apiResponse.get(0);
 
-        // 3️⃣ Valida situação cadastral
         if (!"ATIVA".equalsIgnoreCase(dadosCrus.situacaoCadastral())) {
             throw new RuntimeException("O CNPJ informado não está ativo. Cadastro não permitido: " + dadosCrus.cnpj());
         }
 
-        // 4️⃣ Cria a entidade Clinica
         Clinica clinica = new Clinica();
         clinica.setNome(resquestDTO.nome());
         clinica.setCnpj(resquestDTO.cnpj());
@@ -116,19 +115,54 @@ public class ClinicaService {
 
         Coordinates coords = geocodingService.getCoordinatesFromAddress(fullAddress);
 
-        // Converte o endereço do DTO para a entidade
         Endereco endereco = new Endereco();
         BeanUtils.copyProperties(resquestDTO.endereco(), endereco);
         endereco.setLatitude(coords.latitude());
         endereco.setLongitude(coords.longitude());
         clinica.setEndereco(endereco);
 
-        // 5️⃣ Salva no banco
         clinica = clinicaRepository.save(clinica);
 
-        // 6️⃣ Retorna o DTO de resposta verificada
         return new ClinicaVerificadaDTO(clinica, dadosCrus.situacaoCadastral());
 
     }
+
+    public List<ClinicaProximaDTO> findNearbyRealDistance(double userLat, double userLon) {
+
+        List<Clinica> todasClinicas = clinicaRepository.findAll();
+
+        if (todasClinicas.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String originCoords = userLat + "," + userLon;
+        DistanceMatrixResponse response = distanceMatrix.getDistanceMatrix(originCoords, todasClinicas);
+
+        List<ClinicaProximaDTO> clinicasComDistancia = new ArrayList<>();
+
+        if (response != null && "OK".equals(response.status()) && !response.rows().isEmpty()) {
+
+            List<Element> elements = response.rows().get(0).elements();
+
+            for (int i = 0; i < todasClinicas.size(); i++) {
+
+                if (i < elements.size() && "OK".equals(elements.get(i).status())) {
+
+                    Clinica clinica = todasClinicas.get(i);
+                    Distance distance = elements.get(i).distance();
+
+                    clinicasComDistancia.add(
+                            new ClinicaProximaDTO(
+                                    clinica.getNome(),
+                                    clinica.getEndereco(),
+                                    distance.text()
+                            )
+                    );
+                }
+            }
+        }
+        return clinicasComDistancia;
+    }
+
 
 }
