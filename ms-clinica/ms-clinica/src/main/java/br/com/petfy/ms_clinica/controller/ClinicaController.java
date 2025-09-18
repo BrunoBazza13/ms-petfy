@@ -6,6 +6,7 @@ import br.com.petfy.ms_clinica.dto.clinica.ClinicaVerificadaDTO;
 import br.com.petfy.ms_clinica.service.ClinicaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,12 @@ public class ClinicaController {
             @RequestParam double userLon
     ) {
         return clinicaService.findNearbyRealDistance(userLat, userLon);
+    }
+
+    @GetMapping("/response")
+    public String obterPorta(@Value("${local.server.port}") String porta) {
+        return String.format("Resposta vinda da porta %s", porta);
+
     }
 
 }

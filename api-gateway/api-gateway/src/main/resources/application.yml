@@ -1,0 +1,55 @@
+# Arquivo: src/main/resources/application.yml (VERSÃO CORRIGIDA)
+
+server:
+  port: 8082 # A porta do seu Gateway
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      # As configurações de rotas agora ficam aqui dentro
+      server:
+        webflux:
+          # 1. Desabilita o roteamento automático para termos controle manual
+          discovery:
+            locator:
+              enabled: false
+              lower-case-service-id: true
+
+          # 2. Define as rotas manualmente
+          routes:
+            # Rota para o serviço de autenticação (ROTA PÚBLICA, SEM FILTRO)
+            - id: ms-authentication-route
+              uri: lb://MS-AUTHENTICATION
+              predicates:
+                - Path=/auth/**
+
+            # Rota para o serviço de clínicas (ROTA PROTEGIDA)
+            - id: ms-clinica-route
+              uri: lb://MS-CLINICA
+              predicates:
+                - Path=/clinica/**
+              filters:
+                # Aplica o filtro de segurança (o nome deve corresponder à sua classe)
+                - name: Authentication
+
+            # Rota para o serviço de agendamentos (ROTA PROTEGIDA)
+            - id: ms-agendamento-route
+              uri: lb://MS-AGENDAMENTO
+              predicates:
+                - Path=/agendamentos/**
+              filters:
+                - name: Authentication
+
+# Configuração para o Gateway encontrar os outros serviços no Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+
+# Chave secreta para VALIDAR os tokens (deve ser a mesma do ms-authentication)
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:NDg5Y2E2MjItYjVjMi00MGE5LWE2YjItOTgwMzA1YmYxZDU0ZmY3ZTAxMzUtZmM2My00YjVjLWIyMGEtYzUwNWM1YjYyZDU1Cg==}
