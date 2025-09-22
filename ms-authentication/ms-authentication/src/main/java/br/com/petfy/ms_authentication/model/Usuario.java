@@ -1,6 +1,8 @@
 package br.com.petfy.ms_authentication.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "Users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract  class User implements UserDetails {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,16 +27,26 @@ public abstract  class User implements UserDetails {
     private UserRole role;
 
 
-    public User(String login, String encryptedPassword, UserRole role) {
+    public Usuario(String login, String encryptedPassword, UserRole role) {
     this.login = login;
     this.password = encryptedPassword;
     this.role = role;
     }
 
-    public User() {
+    public Usuario() {
 
     }
 
+    public Usuario(@NotBlank(message = "Email é obrigatório") @Email(message = "Formato de email inválido") String email, String encode) {
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
 
     public UUID getId() {
         return id;

@@ -42,6 +42,25 @@ spring:
               filters:
                 - name: Authentication
 
+
+            # Rota para o serviço de clínicas (ROTA PROTEGIDA)
+            - id: ms-pet-route
+              uri: lb://MS-PET
+              predicates:
+                - Path=/pets/**
+              filters:
+                # Aplica o filtro de segurança (o nome deve corresponder à sua classe)
+                - name: Authentication
+
+            - id: ms-validaCrmv-route
+              uri: lb://MS-VALIDACRMV
+              predicates:
+                  - Path=/validacoes/**
+#              filters:
+#                 - name: Authentication
+
+
+
 # Configuração para o Gateway encontrar os outros serviços no Eureka
 eureka:
   client:

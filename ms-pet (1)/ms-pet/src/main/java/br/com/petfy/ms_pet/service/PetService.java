@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,10 +33,8 @@ public class PetService {
         this.racaRepository = racaRepository;
     }
 
-
-
     @Transactional
-    public PetResponseDto cadastrarPet(PetResquestDto petDto) {
+    public PetResponseDto cadastrarPet(PetResquestDto petDto, UUID tutorId) {
         // 1. Validar e buscar a Espécie
         Especie especie = especieRepository.findById(petDto.especieId())
                 .orElseThrow(() -> new RuntimeException("Espécie não encontrada com ID: " + petDto.especieId()));
@@ -54,6 +53,8 @@ public class PetService {
 
         // 5. Copiar as propriedades diretas
         BeanUtils.copyProperties(petDto, pet);
+
+        pet.setTutorID(tutorId);
         // Os IDs especieId e racaId do DTO não serão copiados diretamente para objetos Especie/Raca
         // na entidade Pet por BeanUtils. É por isso que fizemos os passos acima.
 

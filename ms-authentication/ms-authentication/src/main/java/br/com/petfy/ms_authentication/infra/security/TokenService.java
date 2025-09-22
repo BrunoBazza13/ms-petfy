@@ -1,6 +1,6 @@
 package br.com.petfy.ms_authentication.infra.security;
 
-import br.com.petfy.ms_authentication.model.User;
+import br.com.petfy.ms_authentication.model.Usuario;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -18,13 +18,13 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    public String genereteToken(User user){
+    public String genereteToken(Usuario user){
 
         try{
             Algorithm algorithm = Algorithm.HMAC256(secret);
             String token = JWT.create()
                     .withIssuer("auth-api")
-                    .withSubject(user.getLogin())
+                    .withSubject(user.getId().toString())
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
             return token;

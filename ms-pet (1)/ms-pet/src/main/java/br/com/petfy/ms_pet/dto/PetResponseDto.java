@@ -9,7 +9,7 @@ public record PetResponseDto(  UUID id,
                                char sexo,
                                double peso,
                                RacaDto raca,
-                               int tutorID// DTO da Raça aninhado
+                               UUID tutorID// DTO da Raça aninhado
                                ) {
 
 

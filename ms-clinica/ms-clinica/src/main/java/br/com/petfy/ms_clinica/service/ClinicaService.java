@@ -50,6 +50,8 @@ public class ClinicaService {
     @Autowired
     private DistanceMatrix distanceMatrix;
 
+
+
     public String consultarCnpj(String cnpj) throws IOException {
 
         HttpClient httpClient= HttpClients.createDefault();

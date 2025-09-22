@@ -11,7 +11,7 @@ public record PetResquestDto( String nome,        // Nome do pet
                               int idade,
                               char sexo,
                               double peso,
-                              int tutorID,
+                              UUID tutorID,
                               UUID especieId,     // ID da espécie vindo do seu banco de dados
                               UUID racaId) {      // ID da raça vindo do seu banco de dado){         // Sexo do pet (ex: "Macho", "Fêmea")
 }

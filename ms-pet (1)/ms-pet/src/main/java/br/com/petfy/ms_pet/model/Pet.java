@@ -21,7 +21,7 @@ public class Pet {
     @JoinColumn(name = "raca_id")
     private Raca raca;
 
-    private int tutorID;
+    private UUID tutorID;
 
     public double getPeso() {
         return peso;
@@ -39,11 +39,11 @@ public class Pet {
         this.sexo = sexo;
     }
 
-    public int getTutorID() {
+    public UUID getTutorID() {
         return tutorID;
     }
 
-    public void setTutorID(int tutorID) {
+    public void setTutorID(UUID tutorID) {
         this.tutorID = tutorID;
     }
 
