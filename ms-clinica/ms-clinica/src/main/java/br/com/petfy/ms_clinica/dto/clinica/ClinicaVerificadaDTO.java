@@ -3,11 +3,13 @@ package br.com.petfy.ms_clinica.dto.clinica;
 import br.com.petfy.ms_clinica.dto.coordinates.EnderecoResponseDto;
 import br.com.petfy.ms_clinica.model.Clinica;
 
+import java.util.Set;
+
 
 public record ClinicaVerificadaDTO(
         String nome,
-        String cnpj,
-        String situacaoCadastral,
+     //   String cnpj,
+       // String situacaoCadastral,
         EnderecoResponseDto endereco
 
 ) {
@@ -16,11 +18,12 @@ public record ClinicaVerificadaDTO(
     public ClinicaVerificadaDTO(Clinica clinica, String situacaoCadastrals) {
         this(
                 clinica.getNome(),
-                clinica.getCnpj(),
-                situacaoCadastrals, // Usa a situação vinda da API
+      //          clinica.getCnpj(),
+       //         situacaoCadastrals, // Usa a situação vinda da API
                 new EnderecoResponseDto(clinica.getEndereco()) // Usa o outro DTO para o endereço
         );
     }
+
 
 
 }

@@ -42,6 +42,13 @@ spring:
               filters:
                 - name: Authentication
 
+            # Rota para o serviço de procedimentos (ROTA PROTEGIDA)
+            - id: ms-procedimento-route
+              uri: lb://MS-PROCIMENTO
+              predicates:
+                - Path=/prontuario/**
+              filters:
+                - name: Authentication
 
             # Rota para o serviço de clínicas (ROTA PROTEGIDA)
             - id: ms-pet-route
@@ -63,6 +70,8 @@ spring:
 
 # Configuração para o Gateway encontrar os outros serviços no Eureka
 eureka:
+  instance:
+    hostname: localhost
   client:
     service-url:
       defaultZone: http://localhost:8081/eureka

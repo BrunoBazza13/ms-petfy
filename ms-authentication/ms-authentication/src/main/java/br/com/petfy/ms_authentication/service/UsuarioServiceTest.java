@@ -1,8 +1,10 @@
 package br.com.petfy.ms_authentication.service;
 
 import br.com.petfy.ms_authentication.client.ClinicaClient;
+import br.com.petfy.ms_authentication.client.TutorClint;
 import br.com.petfy.ms_authentication.client.ValidacaoClient;
 import br.com.petfy.ms_authentication.dto.ApiResponseDTO;
+import br.com.petfy.ms_authentication.dto.TutorCadastroRequest;
 import br.com.petfy.ms_authentication.dto.VeterinarioCadastroRequest;
 import br.com.petfy.ms_authentication.dto.VeterinarioResponseDTO;
 import br.com.petfy.ms_authentication.model.Usuario;
@@ -13,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +36,18 @@ public class UsuarioServiceTest {
     @Autowired
     private ClinicaClient clinicaClient;
 
+    @Autowired
+    private TutorClint tutorClint;
+
 
     @Transactional
     public void cadastrarVeterinario(VeterinarioCadastroRequest dados) throws JsonProcessingException {
 
-        // --- ETAPA 1: VALIDAR O CRMV CHAMANDO O MS-VALIDACAO ---
+
         System.out.println("Etapa 1: Validando CRMV...");
+
+        String encryptedPassword = new BCryptPasswordEncoder().encode(dados.password());
+
         var requestValidacao = new ValidacaoClient.CrmvRequest(dados.crmv(), dados.uf(), dados.tipoInscricao());
         ResponseEntity<String> responseValidacao;
 
@@ -71,7 +80,7 @@ public class UsuarioServiceTest {
 
         }
 
-        Usuario novoUsuario = new Usuario(dados.login(), dados.password(), dados.role());
+        Usuario novoUsuario = new Usuario(dados.login(), encryptedPassword, dados.role());
 
         Usuario usuarioSalvo = userRepository.save(novoUsuario);
         System.out.println("Conta de acesso criada com ID: " + usuarioSalvo.getId());
@@ -98,5 +107,35 @@ public class UsuarioServiceTest {
         System.out.println("Perfil profissional solicitado com sucesso.");
 
     }
+
+    @Transactional
+    public Usuario cadastrarTutor(TutorCadastroRequest dados){
+
+        if (userRepository.findByLogin(dados.login()) != null) {
+            throw new IllegalArgumentException("Email já cadastrado.");
+        }
+
+        String encryptedPassword = new BCryptPasswordEncoder().encode(dados.password());
+
+        Usuario novoUsuario = new Usuario(dados.login(), encryptedPassword, dados.role());
+
+        Usuario usuarioSalvo = userRepository.save(novoUsuario);
+
+        var requestPerfil = new TutorClint.TutorRequest(
+                dados.nome(),
+                usuarioSalvo.getId()
+        );
+
+        try {
+            tutorClint.criarPerfilTutor(requestPerfil);
+        } catch (Exception e) {
+            // Se a chamada ao ms-pet falhar, o @Transactional desfaz a criação do usuário.
+            throw new RuntimeException("ERRO CRÍTICO: A conta de acesso foi criada, mas falhou ao criar o perfil no ms-pet. Causa: " + e.getMessage());
+        }
+
+        System.out.println("Fluxo de cadastro de Tutor concluído com sucesso.");
+        return novoUsuario;
+    }
+
 
 }

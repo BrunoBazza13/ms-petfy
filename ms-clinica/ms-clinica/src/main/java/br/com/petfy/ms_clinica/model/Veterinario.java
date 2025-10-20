@@ -3,33 +3,42 @@ package br.com.petfy.ms_clinica.model;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "veterinario")
 public class Veterinario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     private String nome;
     private String crmv;
     private String uf;
     @Column(unique = true)
     private UUID usuarioId; // O link para o usuário no ms-auth
 
+    @OneToMany(mappedBy = "veterinario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Agenda> agenda = new ArrayList<>();
+
     @ManyToMany(mappedBy = "veterinarios")
     private Set<Clinica> clinicas = new HashSet<>();
 
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
+    }
+
+    public List<Agenda> getAgenda() {
+        return agenda;
+    }
+
+    public void setAgenda(List<Agenda> agenda) {
+        this.agenda = agenda;
     }
 
     public String getNome() {

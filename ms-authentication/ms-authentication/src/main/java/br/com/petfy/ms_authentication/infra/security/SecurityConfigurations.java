@@ -34,6 +34,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/auth/crmv").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/test").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/cadastro/tutor").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/cadastro/veterinario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/https://app.cfmv.gov.br/paginas/busca").permitAll()
                         .requestMatchers(HttpMethod.POST, "/").hasRole("")

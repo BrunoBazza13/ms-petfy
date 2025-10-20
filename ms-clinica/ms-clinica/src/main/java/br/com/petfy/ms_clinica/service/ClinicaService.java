@@ -1,15 +1,17 @@
 package br.com.petfy.ms_clinica.service;
-import br.com.petfy.ms_clinica.dto.clinica.ClinicaProximaDTO;
-import br.com.petfy.ms_clinica.dto.clinica.ClinicaResponseDto;
-import br.com.petfy.ms_clinica.dto.clinica.ClinicaResquestDTO;
-import br.com.petfy.ms_clinica.dto.clinica.ClinicaVerificadaDTO;
+import br.com.petfy.ms_clinica.dto.agenda.AgendaDetalhadaDto;
+import br.com.petfy.ms_clinica.dto.clinica.*;
 import br.com.petfy.ms_clinica.dto.coordinates.Coordinates;
 import br.com.petfy.ms_clinica.dto.distance.Distance;
 import br.com.petfy.ms_clinica.dto.distance.DistanceMatrixResponse;
 import br.com.petfy.ms_clinica.dto.distance.Element;
+import br.com.petfy.ms_clinica.dto.veterinatiodto.VeterinarioResponseDTO;
+import br.com.petfy.ms_clinica.model.Agenda;
 import br.com.petfy.ms_clinica.model.Clinica;
 import br.com.petfy.ms_clinica.model.Endereco;
+import br.com.petfy.ms_clinica.model.Veterinario;
 import br.com.petfy.ms_clinica.repository.ClinicaRepository;
+import br.com.petfy.ms_clinica.repository.VeterinarioRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
@@ -29,6 +31,9 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.json.JSONObject;
 
 
@@ -50,8 +55,10 @@ public class ClinicaService {
     @Autowired
     private DistanceMatrix distanceMatrix;
 
+    @Autowired
+    private VeterinarioRepository veterinarioRepository;
 
-
+    //criar um ms-para esta função
     public String consultarCnpj(String cnpj) throws IOException {
 
         HttpClient httpClient= HttpClients.createDefault();
@@ -88,7 +95,10 @@ public class ClinicaService {
     }
 
 
-    public ClinicaVerificadaDTO cadastrarClinica(ClinicaResquestDTO resquestDTO) throws IOException {
+    public ClinicaVerificadaDTO cadastrarClinica(ClinicaResquestDTO resquestDTO, UUID usuarioId) throws IOException {
+
+        Veterinario veterinario = veterinarioRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Perfil de Veterinário não encontrado para o usuário: " + usuarioId));
 
         String resultadoJsonString = consultarCnpj(resquestDTO.cnpj());
 
@@ -108,6 +118,7 @@ public class ClinicaService {
         Clinica clinica = new Clinica();
         clinica.setNome(resquestDTO.nome());
         clinica.setCnpj(resquestDTO.cnpj());
+        clinica.getVeterinarios().add(veterinario);
 
         String fullAddress = String.format("%s, %s - %s, %s",
                 resquestDTO.endereco().getLogradouro(),
@@ -142,6 +153,7 @@ public class ClinicaService {
 
         List<ClinicaProximaDTO> clinicasComDistancia = new ArrayList<>();
 
+
         if (response != null && "OK".equals(response.status()) && !response.rows().isEmpty()) {
 
             List<Element> elements = response.rows().get(0).elements();
@@ -153,10 +165,15 @@ public class ClinicaService {
                     Clinica clinica = todasClinicas.get(i);
                     Distance distance = elements.get(i).distance();
 
+                    List<VeterinarioResponseDTO> veterinariosDto = clinica.getVeterinarios().stream()
+                            .map(VeterinarioResponseDTO::new) // Usa o construtor do DTO
+                            .toList();
+
                     clinicasComDistancia.add(
                             new ClinicaProximaDTO(
                                     clinica.getNome(),
                                     clinica.getEndereco(),
+                                    veterinariosDto,
                                     distance.text()
                             )
                     );
@@ -165,6 +182,25 @@ public class ClinicaService {
         }
         return clinicasComDistancia;
     }
+
+
+    public ClinicaNomeDto bucarClinicaPorId(UUID id){
+
+        Clinica clinica = clinicaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Clínica não encontrada com o ID: " + id));
+
+        // 2. Converte a entidade para o DTO de resposta e o retorna.
+        return new ClinicaNomeDto(clinica.getId(), clinica.getNome());
+
+    }
+
+    public List<ClinicaNomeDto> listarClinicas(List<UUID> ids) {
+        List<Clinica> clinicas = clinicaRepository.findAllById(ids);
+        return clinicas.stream()
+                .map(ClinicaNomeDto::new)
+                .toList();
+    }
+
 
 
 }

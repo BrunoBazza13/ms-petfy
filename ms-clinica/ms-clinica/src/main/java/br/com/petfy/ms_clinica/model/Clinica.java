@@ -30,6 +30,14 @@ public class Clinica {
     public Clinica(){
     }
 
+    public Set<Veterinario> getVeterinarios() {
+        return veterinarios;
+    }
+
+    public void setVeterinarios(Set<Veterinario> veterinarios) {
+        this.veterinarios = veterinarios;
+    }
+
     public UUID getId() {
         return id;
     }

@@ -9,7 +9,7 @@ import java.util.UUID;
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String nome;
     private String porte;
@@ -17,11 +17,23 @@ public class Pet {
     private char sexo;
     private double peso;
 
+    @ManyToOne
+    @JoinColumn(name = "tutor_id", nullable = false)
+    private Tutor tutor;
+
     @ManyToOne(cascade = CascadeType.ALL)     // varios pets pertence a uma unica raça
     @JoinColumn(name = "raca_id")
     private Raca raca;
 
-    private UUID tutorID;
+   // private UUID tutorID;
+
+    public Tutor getTutorId() {
+        return tutor;
+    }
+
+    public void setTutorId(Tutor tutorId) {
+        this.tutor = tutorId;
+    }
 
     public double getPeso() {
         return peso;
@@ -37,14 +49,6 @@ public class Pet {
 
     public void setSexo(char sexo) {
         this.sexo = sexo;
-    }
-
-    public UUID getTutorID() {
-        return tutorID;
-    }
-
-    public void setTutorID(UUID tutorID) {
-        this.tutorID = tutorID;
     }
 
     public UUID getId() {

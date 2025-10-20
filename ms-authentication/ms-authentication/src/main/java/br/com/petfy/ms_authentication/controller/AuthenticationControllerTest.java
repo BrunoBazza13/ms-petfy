@@ -3,6 +3,7 @@ package br.com.petfy.ms_authentication.controller;
 
 import br.com.petfy.ms_authentication.dto.AuthenticationDTO;
 import br.com.petfy.ms_authentication.dto.LoginResponseDTO;
+import br.com.petfy.ms_authentication.dto.TutorCadastroRequest;
 import br.com.petfy.ms_authentication.dto.VeterinarioCadastroRequest;
 import br.com.petfy.ms_authentication.infra.security.TokenService;
 import br.com.petfy.ms_authentication.model.Usuario;
@@ -14,10 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -55,10 +54,17 @@ public class AuthenticationControllerTest {
     * RF 15: O CRMV informado no cadastro da clínica deve ser validado antes da criação
     * */
     @PostMapping("/cadastro/veterinario")
-    public ResponseEntity<String> cadastrarVeterinario(@RequestBody @Valid VeterinarioCadastroRequest dados) throws JsonProcessingException {
-        usuarioServiceT.cadastrarVeterinario(dados);
+    public ResponseEntity<String> cadastrarVeterinario(@RequestBody @Valid VeterinarioCadastroRequest dadosVeterinario) throws JsonProcessingException {
+        usuarioServiceT.cadastrarVeterinario(dadosVeterinario);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @PostMapping("/cadastro/tutor")
+    public ResponseEntity<String> cadastrarVeterinario(@RequestBody @Valid TutorCadastroRequest dadosTutor) throws JsonProcessingException {
+        usuarioServiceT.cadastrarTutor(dadosTutor);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
 
 
 }
